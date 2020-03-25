@@ -5,6 +5,7 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
+    "build:wasm": "docker run --rm -v $(pwd):/src trzeci/emscripten ./build-wasm.sh",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
