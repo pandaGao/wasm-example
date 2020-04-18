@@ -1258,11 +1258,11 @@ function updateGlobalBufferAndViews(buf) {
 }
 
 var STATIC_BASE = 1024,
-    STACK_BASE = 3952,
+    STACK_BASE = 3984,
     STACKTOP = STACK_BASE,
-    STACK_MAX = 5246832,
-    DYNAMIC_BASE = 5246832,
-    DYNAMICTOP_PTR = 3760;
+    STACK_MAX = 5246864,
+    DYNAMIC_BASE = 5246864,
+    DYNAMICTOP_PTR = 3792;
 
 assert(STACK_BASE % 16 === 0, 'stack must start aligned');
 assert(DYNAMIC_BASE % 16 === 0, 'heap must start aligned');
@@ -1795,13 +1795,16 @@ var tempI64;
 
 // === Body ===
 
-var ASM_CONSTS = [];
+var ASM_CONSTS = [function() { console.log("hello world"); }];
+
+function _emscripten_asm_const_i(code) {
+  return ASM_CONSTS[code]();
+}
 
 
 
 
-
-// STATICTOP = STATIC_BASE + 2928;
+// STATICTOP = STATIC_BASE + 2960;
 /* global initializers */ /*__ATINIT__.push();*/
 
 
@@ -1812,7 +1815,7 @@ var ASM_CONSTS = [];
 
 
 /* no memory initializer */
-var tempDoublePtr = 3936
+var tempDoublePtr = 3968
 assert(tempDoublePtr % 8 == 0);
 
 function copyTempFloat(ptr) { // functions, because inlining this code increases code size too much
@@ -2000,6 +2003,8 @@ function copyTempDouble(ptr) {
   return _fd_write.apply(null, arguments)
   }
 
+  var _emscripten_asm_const_int=true;
+
   function _emscripten_get_heap_size() {
       return HEAP8.length;
     }
@@ -2112,22 +2117,22 @@ function nullFunc_jiji(x) { abortFnPtrError(x, 'jiji'); }
 
 var asmGlobalArg = {};
 
-var asmLibraryArg = { "___lock": ___lock, "___unlock": ___unlock, "___wasi_fd_write": ___wasi_fd_write, "__memory_base": 1024, "__table_base": 0, "_emscripten_get_heap_size": _emscripten_get_heap_size, "_emscripten_memcpy_big": _emscripten_memcpy_big, "_emscripten_resize_heap": _emscripten_resize_heap, "_fd_write": _fd_write, "abort": abort, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "abortStackOverflow": abortStackOverflow, "demangle": demangle, "demangleAll": demangleAll, "emscripten_realloc_buffer": emscripten_realloc_buffer, "flush_NO_FILESYSTEM": flush_NO_FILESYSTEM, "getTempRet0": getTempRet0, "jsStackTrace": jsStackTrace, "memory": wasmMemory, "nullFunc_ii": nullFunc_ii, "nullFunc_iiii": nullFunc_iiii, "nullFunc_jiji": nullFunc_jiji, "setTempRet0": setTempRet0, "stackTrace": stackTrace, "table": wasmTable, "tempDoublePtr": tempDoublePtr };
+var asmLibraryArg = { "___lock": ___lock, "___unlock": ___unlock, "___wasi_fd_write": ___wasi_fd_write, "__memory_base": 1024, "__table_base": 0, "_emscripten_asm_const_i": _emscripten_asm_const_i, "_emscripten_get_heap_size": _emscripten_get_heap_size, "_emscripten_memcpy_big": _emscripten_memcpy_big, "_emscripten_resize_heap": _emscripten_resize_heap, "_fd_write": _fd_write, "abort": abort, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "abortStackOverflow": abortStackOverflow, "demangle": demangle, "demangleAll": demangleAll, "emscripten_realloc_buffer": emscripten_realloc_buffer, "flush_NO_FILESYSTEM": flush_NO_FILESYSTEM, "getTempRet0": getTempRet0, "jsStackTrace": jsStackTrace, "memory": wasmMemory, "nullFunc_ii": nullFunc_ii, "nullFunc_iiii": nullFunc_iiii, "nullFunc_jiji": nullFunc_jiji, "setTempRet0": setTempRet0, "stackTrace": stackTrace, "table": wasmTable, "tempDoublePtr": tempDoublePtr };
 // EMSCRIPTEN_START_ASM
 var asm =Module["asm"]// EMSCRIPTEN_END_ASM
 (asmGlobalArg, asmLibraryArg, buffer);
 
 Module["asm"] = asm;
+var __Z6addIntii = Module["__Z6addIntii"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["__Z6addIntii"].apply(null, arguments)
+};
+
 var ___errno_location = Module["___errno_location"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
   return Module["asm"]["___errno_location"].apply(null, arguments)
-};
-
-var _addInt = Module["_addInt"] = function() {
-  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
-  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
-  return Module["asm"]["_addInt"].apply(null, arguments)
 };
 
 var _benchMarkAdd = Module["_benchMarkAdd"] = function() {
@@ -2164,6 +2169,12 @@ var _free = Module["_free"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
   return Module["asm"]["_free"].apply(null, arguments)
+};
+
+var _hello_world = Module["_hello_world"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["_hello_world"].apply(null, arguments)
 };
 
 var _malloc = Module["_malloc"] = function() {
@@ -2505,6 +2516,21 @@ run();
     return [...res]
   }
   WASM_API.benchMarkAdd = Module.cwrap('benchMarkAdd', 'number', ['number', 'number'])
+  WASM_API.helloWorld = Module.cwrap('hello_world', 'string', [])
   Module.portAPI = WASM_API
+  self.onmessage = (msg) => {
+    if (msg.data && msg.data.type) {
+      switch (msg.data.type) {
+        case 'doubleIntArray': {
+          const res = WASM_API.doubleIntArray(msg.data.array)
+          self.postMessage({
+            type: 'doubleIntArray',
+            return: res
+          })
+          break
+        }
+      }
+    }
+  }
 })()
 

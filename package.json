@@ -6,6 +6,8 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "build:wasm": "docker run --rm -v $(pwd):/src trzeci/emscripten ./build-wasm.sh",
+    "build:ffmpeg": "docker run --rm -v $(pwd):/src trzeci/emscripten ./build-ffmpeg.sh",
+    "build:ffmpeg-wasm": "docker run --rm -v $(pwd):/src trzeci/emscripten ./build-ffmpeg.sh wasm",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {

@@ -30,5 +30,20 @@
     return [...res]
   }
   WASM_API.benchMarkAdd = Module.cwrap('benchMarkAdd', 'number', ['number', 'number'])
+  WASM_API.helloWorld = Module.cwrap('hello_world', 'string', [])
   Module.portAPI = WASM_API
+  self.onmessage = (msg) => {
+    if (msg.data && msg.data.type) {
+      switch (msg.data.type) {
+        case 'doubleIntArray': {
+          const res = WASM_API.doubleIntArray(msg.data.array)
+          self.postMessage({
+            type: 'doubleIntArray',
+            return: res
+          })
+          break
+        }
+      }
+    }
+  }
 })()

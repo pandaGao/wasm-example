@@ -15,6 +15,13 @@
   #endif
 #endif
 
+EM_PORT_API(const char*) hello_world() {
+  EM_ASM(
+    console.log("hello world");
+  );
+  return "hello world";
+}
+
 EM_PORT_API(int) benchMarkAdd(int a, int b) {
   int c;
   for (int i = 0; i < 10000000; i++) {
@@ -23,7 +30,7 @@ EM_PORT_API(int) benchMarkAdd(int a, int b) {
   return c;
 }
 
-EM_PORT_API(int) addInt(int a, int b) {
+EMSCRIPTEN_KEEPALIVE int addInt(int a, int b) {
   return a + b;
 }
 

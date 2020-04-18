@@ -32,7 +32,7 @@ echo "============================================="
     --post-js ./src/wasm/port.js \
     -s ASSERTIONS=1 \
     -s ALLOW_MEMORY_GROWTH=1 \
-    -o ./public/example.out.js
+    -o ./public/demo.out.js
 )
 echo "============================================="
 echo "Compiling wasm bindings done"

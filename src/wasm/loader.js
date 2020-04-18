@@ -8,7 +8,7 @@
  * loader.load().then(res => { let Module = res.Module // ... call Module function })
  */
 
-export default class WasmLoader {
+class WasmLoader {
   /**
    * Create a wasm loader
    * @param {Object}  config - loader config
@@ -216,3 +216,112 @@ export default class WasmLoader {
     })
   }
 }
+
+/**
+ * 运行在Web Worker中
+ * 监听postMessage来启动加载
+ */
+if (typeof importScripts === 'function' && typeof WorkerGlobalScope !== 'undefined') {
+  let workerLoader = null
+  let workerModule = null
+
+  self.addEventListener('message', msg => {
+    if (msg.data && msg.data.type) {
+      switch (msg.data.type) {
+        // 启动加载
+        case 'wasm-loader.load': {
+          workerLoader = new WasmLoader(msg.data.config || {})
+          workerLoader.load().then(res => {
+            workerModule = res.Module
+            self.postMessage({
+              type: 'wasm-loader.loaded'
+            })
+          })
+          break
+        }
+        // 获取当前loader状态
+        case 'wasm-loader.getStatus': {
+          if (!workerLoader) {
+            self.postMessage({
+              type: 'wasm-loader.getStatusReturn',
+              id: msg.data.id || '',
+              status: 'waiting'
+            })
+          } else {
+            const status = workerLoader.getLoaderStatus()
+            if (status.Module) {
+              delete status.Module
+            }
+            status.type = 'wasm-loader.getStatusReturn'
+            self.postMessage(status)
+          }
+          break
+        }
+        // 调用Module上挂载的方法 并将结果发送给主线程
+        // 这里不能设置transfer所以只建议在结果是简单数据类型时使用此方法
+        case 'wasm-loader.callModuleFunction': {
+          if (!msg.data.function) {
+            self.postMessage({
+              type: 'wasm-loader.callModuleFunctionReturn',
+              function: '',
+              id: msg.data.id || '',
+              error: true,
+              errorMessage: 'Attribute \'function\' is required'
+            })
+            break
+          }
+          if (!workerModule) {
+            self.postMessage({
+              type: 'wasm-loader.callModuleFunctionReturn',
+              function: '',
+              id: msg.data.id || '',
+              error: true,
+              errorMessage: 'Module is not loaded'
+            })
+            break
+          }
+          const targetFunction = msg.data.function.split('.').reduce((pre, cur) => {
+            if (pre && pre[cur]) {
+              return pre[cur]
+            } else {
+              return undefined
+            }
+          }, workerModule)
+          if (typeof targetFunction === 'function') {
+            const args = msg.data.args || []
+            const res = targetFunction(...args)
+            // 如果返回结果是Promise 等待resolve
+            if (res && res.then && typeof res.then === 'function') {
+              res.then(data => {
+                self.postMessage({
+                  type: 'wasm-loader.callModuleFunctionReturn',
+                  function: msg.data.function,
+                  id: msg.data.id || '',
+                  data
+                })
+              })
+            } else {
+              self.postMessage({
+                type: 'wasm-loader.callModuleFunctionReturn',
+                function: msg.data.function,
+                id: msg.data.id || '',
+                data: res
+              })
+            }
+          } else {
+            self.postMessage({
+              type: 'wasm-loader.callModuleFunctionReturn',
+              function: '',
+              id: msg.data.id || '',
+              error: true,
+              errorMessage: `Cannot find function '${msg.data.function}' in Module`
+            })
+          }
+          break
+        }
+      }
+    }
+  })
+}
+
+export default WasmLoader
